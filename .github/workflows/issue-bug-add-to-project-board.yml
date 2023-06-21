@@ -1,0 +1,27 @@
+name: Add Issue to Project Board
+on:
+  issues:
+    types:
+      - opened
+
+jobs:
+  addIssueToProject:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Add to Project Board
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: columns } = await github.projects.listColumns({
+              project_id: 1,
+            });
+
+            const targetColumn = columns.find(column => column.name === 'In Progress');
+
+            await github.projects.createCard({
+              column_id: targetColumn.id,
+              content_id: context.payload.issue.number,
+              content_type: 'Issue',
+            });
